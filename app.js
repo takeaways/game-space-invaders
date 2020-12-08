@@ -83,7 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
       alienInvaders[i] += direction;
     }
     for (let i = 0; i <= alienInvaders.length - 1; i++) {
-      squares[alienInvaders[i]].classList.add("invader");
+      if (!alienInvadersTakenDown.includes(i)) {
+        squares[alienInvaders[i]].classList.add("invader");
+      }
     }
 
     if (squares[currentShooterIndex].classList.contains("invader", "shooter")) {
@@ -98,12 +100,57 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(invader);
       }
     }
+
+    //win
+    if (alienInvadersTakenDown.length === alienInvaders.length) {
+      resultDisplay.textContent = "You Win";
+      clearInterval(invaderId);
+    }
   };
 
-  invader = setInterval(moveInvaders, 200);
+  invader = setInterval(moveInvaders, 1000);
 
   const shoot = (e) => {
     let laserId;
     let currentLaserIndex = currentShooterIndex;
+
+    const moveLaser = () => {
+      squares[currentLaserIndex].classList.remove("laser");
+      currentLaserIndex -= width;
+      squares[currentLaserIndex].classList.add("laser");
+
+      if (squares[currentLaserIndex].classList.contains("invader")) {
+        squares[currentLaserIndex].classList.remove("laser");
+        squares[currentLaserIndex].classList.remove("invader");
+        squares[currentLaserIndex].classList.add("boom");
+
+        setTimeout(
+          () => squares[currentLaserIndex].classList.remove("boom"),
+          250
+        );
+        clearInterval(laserId);
+
+        const alienTakenDown = alienInvaders.indexOf(currentLaserIndex);
+        alienInvadersTakenDown.push(alienTakenDown);
+        result++;
+        resultDisplay.textContent = result;
+      }
+
+      if (currentLaserIndex < width) {
+        clearInterval(laserId);
+        setTimeout(
+          () => squares[currentLaserIndex].classList.remove("laser"),
+          100
+        );
+      }
+    };
+
+    switch (e.keyCode) {
+      case 32:
+        laserId = setInterval(moveLaser, 100);
+        break;
+    }
   };
+
+  document.addEventListener("keyup", shoot);
 }); //end
